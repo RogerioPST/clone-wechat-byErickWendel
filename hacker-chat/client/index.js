@@ -1,5 +1,19 @@
+/*EXEMPLO*
+node index.js \
+    --username erickwendel \
+    --room sala01 \
+    --hostUri localhost
+*/
 import Events from 'events'
+import CliConfig from './src/cliConfig.js';
+import SocketClient from './src/socket.js';
 import TerminalController from "./src/terminalController.js";
+
+//considerando o EXEMPLO*, em nodepath=node, filePath=arquivo index.js,
+//commands=--username erickwendel \     --room sala01 \    --hostUri localhost
+const [nodePath, filePath, ...commands] = process.argv
+
+const config = CliConfig.parseArguments(commands)
 
 /*
 esse componente -componentEmitter- vai trafegar entre as camadas (controller, view)
@@ -7,5 +21,9 @@ emitindo os eventos necessarios p atualizar tela ou até p falar
 c backend q alguma acao necessaria precisa ser feita
 */
 const componentEmitter = new Events()
-const controller = new TerminalController()
-await controller.initializeTable(componentEmitter)
+
+const socketClient = new SocketClient(config)
+await socketClient.initialize()
+
+//const controller = new TerminalController()
+//await controller.initializeTable(componentEmitter)
