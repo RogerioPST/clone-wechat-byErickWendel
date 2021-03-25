@@ -27,13 +27,13 @@ export default class TerminalController{
 	o backend, a view etc q chegou a msg nova
 	
 	*/
-	#onInputReceived(eventEmitter){
-		return function(){
-			const message = this.getValue()
-			console.log(message)
-			this.clearValue()
+	#onInputReceived(eventEmitter) {
+		return function () {
+				const message = this.getValue()
+				eventEmitter.emit(constants.events.app.MESSAGE_SENT, message)
+				this.clearValue()
 		}
-	}
+}
 ////passo o componente inteiro, mas no metodo onReceive, soh vai extrair o q ele precisa do obj components	
 	#onMessageReceived({ screen, chat }) {
 		return msg => {			
