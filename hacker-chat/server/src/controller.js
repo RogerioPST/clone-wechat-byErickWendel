@@ -64,6 +64,22 @@ export default class Controller {
 			}
 
 	}
+	message(socketId, data) {
+//extraio roomId pq quero mandar a msg somente p quem está na mesma
+//sala		
+		const { userName, roomId } = this.#users.get(socketId)
+//qdo recebemos uma msg, o client envia msg p o servidor e a msg eh 
+//enviada p todos por broadcast e soh entao aparece no client
+//p evitar enviar msg achando q está online estando offline.
+		this.broadCast({
+				roomId,
+				socketId,
+				event: constants.event.MESSAGE,
+				message: { userName, message: data },
+				includeCurrentSocket: true,
+		})
+
+	}
 	//se quisermos acessar os usuarios de uma sala especifica, conseguimos
 	#joinUserOnRoom(roomId, user) {
 			const usersOnRoom = this.#rooms.get(roomId) ?? new Map()
@@ -72,10 +88,29 @@ export default class Controller {
 			return usersOnRoom
 	}
 
+	#logoutUser(id, roomId) {
+//deleta o usuario da memoria	e da sala e atualiza a sala c os usuarios atuais
+		this.#users.delete(id)
+		const usersOnRoom = this.#rooms.get(roomId)
+		usersOnRoom.delete(id)
+
+		this.#rooms.set(roomId, usersOnRoom)
+	}
+
 	#onSocketClosed(id) {
-			return data => {
-					console.log('onSocketClosed', id)
-			}
+		return _ => {
+			const { userName, roomId } = this.#users.get(id)
+			console.log(userName, 'disconnected', id)
+			this.#logoutUser(id, roomId)
+
+			this.broadCast({
+					roomId,
+					message: { id, userName },
+					socketId: id,
+					event: constants.event.DISCONNECT_USER,
+			})
+
+		}
 	}
 //toda vez q alguem emitir um evento, vai cair aqui, daih vai extrair	o
 //evento e a message, vai descobrir a funcao q vai chamar e passar os param p essa funcao

@@ -33,6 +33,23 @@ export default class EventManager {
         connectedUsers.forEach(({ id, userName }) => this.#allUsers.set(id, userName))
         this.#updateUsersComponent()
     }
+//o servidor já está recebendo a msg de disconnected. 
+//falta agora o client tb receber, deletar o user, atualizar
+//activity e usersComponent
+		disconnectUser(user) {
+			const { userName, id } = user
+			this.#allUsers.delete(id)
+
+			this.#updateActivityLogComponent(`${userName} left!`)
+			this.#updateUsersComponent()
+		}
+
+		message(message) {
+			this.componentEmitter.emit(
+					constants.events.app.MESSAGE_RECEIVED,
+					message
+			)
+		}
 //cada uma dessas funcoes publicas eh o mesmo nome da constants do server - newUserConnected
     newUserConnected(message) {
         const user = message
